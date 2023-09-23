@@ -1,5 +1,3 @@
-import numpy as np
-
 from filter.image import *
 from filter.plot import *
 
@@ -13,9 +11,9 @@ def cluster(pixels, labels, centroids):
 
         for j, centroid in enumerate(centroids):
             dist = (
-                np.power(pos[0] - centroid[0], 2)
-                + np.power(pos[1] - centroid[1], 2)
-                + np.power(pos[2] - centroid[2], 2)
+                    np.power(pos[0] - centroid[0], 2)
+                    + np.power(pos[1] - centroid[1], 2)
+                    + np.power(pos[2] - centroid[2], 2)
             )
 
             if dist < min_dist:
@@ -37,12 +35,13 @@ def update_centroids(pixels, labels, centroids):
 
 
 def k_means(pixels, labels, centroids, plot):
+    i = 0
+
     while True:
         labels, centroids, changed = cluster(pixels, labels, centroids)
 
         if plot:
-            print("\nRe-cluster points:")
-            draw_graph(pixels, labels, centroids)
+            draw_graph(pixels, labels, centroids, f"Re-cluster points: {i}")
 
         if changed == 0:
             break
@@ -50,12 +49,13 @@ def k_means(pixels, labels, centroids, plot):
         centroids = update_centroids(pixels, labels, centroids)
 
         if plot:
-            print("\nRe-calculate centroids:")
-            draw_graph(pixels, labels, centroids)
+            draw_graph(pixels, labels, centroids, f"Re-calculate centroids: {i}")
+
+        i += 1
 
 
-def filter_image(image, k, plot=False):
-    img = downscale_image(image)
+def filter_image(image_input, image_output, k, plot=False):
+    img = downscale_image(image_input)
     pixels = np.asarray(img.getdata())
 
     centroids = np.empty([k, 3])
@@ -67,4 +67,4 @@ def filter_image(image, k, plot=False):
 
     k_means(pixels, labels, centroids, plot)
 
-    generate_image(img, labels, centroids)
+    generate_image(img, image_output, labels, centroids)

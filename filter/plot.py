@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 
-def draw_graph(pixels, labels, centroids):
+def draw_graph(pixels, labels, centroids, title):
     fig = plt.figure()
     ax = fig.add_subplot(projection="3d")
 
@@ -30,5 +30,7 @@ def draw_graph(pixels, labels, centroids):
         s=500,
         zorder=1,
     )
+
+    ax.set_title(title)
 
     plt.show()

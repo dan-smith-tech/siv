@@ -8,7 +8,9 @@ def downscale_image(image):
     return img
 
 
-def generate_image(image, labels, centroids):
+def generate_image(image, image_output, labels, centroids):
+    print(centroids)
+
     new_image = np.array(
         [
             [
@@ -19,4 +21,4 @@ def generate_image(image, labels, centroids):
         ]
     )
 
-    Image.fromarray(new_image.astype(np.uint8), mode="RGB").save("output.png")
+    Image.fromarray(new_image.astype(np.uint8), mode="RGB").save(image_output)
