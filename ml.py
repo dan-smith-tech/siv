@@ -60,6 +60,11 @@ def filter_image(image_input, image_output, k, plot=False):
     img = downscale_image(image_input)
     pixels = np.asarray(img.getdata())
 
+    def rgb_to_hex(rgb):
+        return "#{:02X}{:02X}{:02X}".format(*rgb)
+
+    hex_pixels = np.array([rgb_to_hex(pixel) for pixel in pixels])
+
     centroids = np.empty([k, 3])
     labels = np.empty(pixels.shape[0])
 
