@@ -1,0 +1,5 @@
+[package]
+name = "siv"
+edition = "2024"
+
+[dependencies]

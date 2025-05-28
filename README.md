@@ -1,2 +1,3 @@
-# siv
- ML to filter the colours in an image.
+# Siv
+
+Clustering of image pixels to create cool filters.
