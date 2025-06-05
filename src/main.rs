@@ -1,3 +1,30 @@
-fn main() {
-    println!("It's (actually efficient) clustering time B)");
+use image::ImageReader;
+use rand::Rng;
+use std::error::Error;
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let img = ImageReader::open("/home/dan/siv/test.jpg")?.decode()?;
+
+    // note this is a 1D array (so there are pixels.len() / 3 actual RGB pixels)
+    let pixels = img.to_rgb8().to_vec();
+
+    let starting_centroids = get_random_centroids(pixels.len() as u32 / 3, 3);
+
+    println!("{:?}", starting_centroids);
+    Ok(())
+}
+
+fn get_random_centroids(pixel_count: u32, n: u8) -> Vec<[u8; 3]> {
+    let mut vec = Vec::new();
+    let mut rng = rand::thread_rng();
+
+    for _ in 0..n {
+        let pos = rng.random_range(0..pixel_count);
+        let r = (pos * 3) as u8;
+        let g = (pos * 3 + 1) as u8;
+        let b = (pos * 3 + 2) as u8;
+        vec.push([r, g, b]);
+    }
+
+    vec
 }
