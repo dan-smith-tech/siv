@@ -6,18 +6,23 @@ use std::error::Error;
 #[derive(Parser, Debug)]
 struct Args {
     file: String,
+
+    #[arg(long, short)]
+    debug: bool,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let Args { file } = Args::parse();
-    let image = ImageReader::open(file)?.decode()?;
+    let Args { file, debug } = Args::parse();
 
+    let image = ImageReader::open(file)?.decode()?;
     // note this is a 1D array (so there are pixels.len() / 3 actual RGB pixels)
     let pixels = image.to_rgb8().to_vec();
 
     let starting_centroids = get_random_centroids(pixels.len() as u32 / 3, 3);
+    if debug {
+        println!("{:?}", starting_centroids);
+    }
 
-    println!("{:?}", starting_centroids);
     Ok(())
 }
 
