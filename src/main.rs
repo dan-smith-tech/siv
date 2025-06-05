@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn get_random_centroids(pixel_count: u32, n: u8) -> Vec<[u8; 3]> {
     let mut vec = Vec::new();
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for _ in 0..n {
         let pos = rng.random_range(0..pixel_count);
