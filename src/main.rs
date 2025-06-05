@@ -1,12 +1,19 @@
+use clap::Parser;
 use image::ImageReader;
 use rand::Rng;
 use std::error::Error;
 
+#[derive(Parser, Debug)]
+struct Args {
+    file: String,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let img = ImageReader::open("/home/dan/siv/test.jpg")?.decode()?;
+    let Args { file } = Args::parse();
+    let image = ImageReader::open(file)?.decode()?;
 
     // note this is a 1D array (so there are pixels.len() / 3 actual RGB pixels)
-    let pixels = img.to_rgb8().to_vec();
+    let pixels = image.to_rgb8().to_vec();
 
     let starting_centroids = get_random_centroids(pixels.len() as u32 / 3, 3);
 
