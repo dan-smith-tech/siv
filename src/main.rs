@@ -1,6 +1,6 @@
 use clap::Parser;
 use image::ImageReader;
-use rand::Rng;
+use rand::distr::{Distribution, Uniform};
 use std::error::Error;
 
 #[derive(Parser, Debug)]
@@ -18,25 +18,24 @@ fn main() -> Result<(), Box<dyn Error>> {
     // note this is a 1D array (so there are pixels.len() / 3 actual RGB pixels)
     let pixels = image.to_rgb8().to_vec();
 
-    let starting_centroids = get_random_centroids(pixels.len() as u32 / 3, 3);
+    let starting_centroids = get_random_centroids(pixels, 3)?;
     if debug {
-        println!("{:?}", starting_centroids);
+        println!("Starting centroids: {:?}", starting_centroids);
     }
 
     Ok(())
 }
 
-fn get_random_centroids(pixel_count: u32, n: u8) -> Vec<[u8; 3]> {
-    let mut vec = Vec::new();
+fn get_random_centroids(pixels: Vec<u8>, n: u8) -> Result<Vec<[u8; 3]>, Box<dyn Error>> {
+    let pixel_count = pixels.len() / 3;
     let mut rng = rand::rng();
-
-    for _ in 0..n {
-        let pos = rng.random_range(0..pixel_count);
-        let r = (pos * 3) as u8;
-        let g = (pos * 3 + 1) as u8;
-        let b = (pos * 3 + 2) as u8;
-        vec.push([r, g, b]);
+    match Uniform::try_from(0..pixel_count) {
+        Ok(dist) => Ok((0..n)
+            .map(|_| {
+                let pos = dist.sample(&mut rng) * 3;
+                [pixels[pos], pixels[pos + 1], pixels[pos + 2]]
+            })
+            .collect()),
+        Err(e) => Err(Box::new(e)),
     }
-
-    vec
 }
