@@ -1,5 +1,5 @@
 use clap::Parser;
-use image::ImageReader;
+use image::{ImageBuffer, ImageReader, RgbImage};
 use rand::distr::{Distribution, Uniform};
 use std::error::Error;
 
@@ -25,10 +25,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("Starting centroids: {:?}", starting_centroids);
     }
 
-    let clustered_pixels = cluster_pixels(&pixels, starting_centroids);
-    if debug {
-        println!("Clustered pixels: {:?}", clustered_pixels);
-    }
+    let clustered_pixels = cluster_pixels(&pixels, &starting_centroids);
+
+    let reconstructed_pixels = reconstruct_image(&pixels, clustered_pixels, &starting_centroids);
+
+    let img_buffer: RgbImage =
+        ImageBuffer::from_raw(image.width(), image.height(), reconstructed_pixels)
+            .expect("Pixel data does not match dimensions");
+    img_buffer.save("output.png")?;
 
     Ok(())
 }
@@ -47,7 +51,7 @@ fn get_random_centroids(pixels: &Vec<u8>, n: u8) -> Result<Vec<[u8; 3]>, Box<dyn
     }
 }
 
-fn cluster_pixels(pixels: &Vec<u8>, centroids: Vec<[u8; 3]>) -> Vec<u8> {
+fn cluster_pixels(pixels: &Vec<u8>, centroids: &Vec<[u8; 3]>) -> Vec<u8> {
     let pixel_count = pixels.len() / 3;
 
     let mut closest_centroid_index: u8 = 0;
@@ -81,4 +85,22 @@ fn cluster_pixels(pixels: &Vec<u8>, centroids: Vec<[u8; 3]>) -> Vec<u8> {
             closest_centroid_index
         })
         .collect()
+}
+
+fn reconstruct_image(
+    pixels: &Vec<u8>,
+    clustered_pixels: Vec<u8>,
+    centroids: &Vec<[u8; 3]>,
+) -> Vec<u8> {
+    let mut reconstructed_pixels = Vec::with_capacity(pixels.len());
+
+    clustered_pixels
+        .iter()
+        .map(|pixel| {
+            let centroid = centroids[*pixel as usize];
+            reconstructed_pixels.extend([centroid[0], centroid[1], centroid[2]]);
+        })
+        .for_each(drop);
+
+    reconstructed_pixels
 }
