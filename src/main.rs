@@ -87,6 +87,36 @@ fn cluster_pixels(pixels: &Vec<u8>, centroids: &Vec<[u8; 3]>) -> Vec<u8> {
         .collect()
 }
 
+fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<[u8; 3]> {
+    let mut centroid_sums = vec![[0; 3]; n as usize];
+
+    (0..clustered_pixels.len())
+        .map(|clustered_pixel| {
+            let pixel_start = clustered_pixel * 3;
+            centroid_sums[clustered_pixel][0] += pixels[pixel_start] as usize;
+            centroid_sums[clustered_pixel][1] += pixels[pixel_start + 1] as usize;
+            centroid_sums[clustered_pixel][2] += pixels[pixel_start + 2] as usize;
+        })
+        .for_each(drop);
+
+    let counts: Vec<usize> = (0..n)
+        .map(|i| clustered_pixels.iter().filter(|&&label| label == i).count())
+        .collect();
+
+    (0..centroid_sums.len())
+        .map(|i| {
+            centroid_sums[i][0] /= counts[i];
+            centroid_sums[i][1] /= counts[i];
+            centroid_sums[i][2] /= counts[i];
+            [
+                centroid_sums[i][0] as u8,
+                centroid_sums[i][1] as u8,
+                centroid_sums[i][2] as u8,
+            ]
+        })
+        .collect()
+}
+
 fn reconstruct_image(
     pixels: &Vec<u8>,
     clustered_pixels: Vec<u8>,
