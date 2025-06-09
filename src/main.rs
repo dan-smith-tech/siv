@@ -19,15 +19,30 @@ fn main() -> Result<(), Box<dyn Error>> {
     let pixels = image.to_rgb8().to_vec();
 
     // TODO: get cluster n from input but as a u8 and ensure it is below u8::MAX
+    let n = 3;
 
-    let starting_centroids = get_random_centroids(&pixels, 3)?;
+    let mut centroids = get_random_centroids(&pixels, 3)?;
+    let mut labelled_pixels = cluster_pixels(&pixels, &centroids);
+    centroids = update_centroids(&pixels, &labelled_pixels, n);
     if debug {
-        println!("Starting centroids: {:?}", starting_centroids);
+        println!("Starting centroids: {:?}", centroids);
     }
 
-    let clustered_pixels = cluster_pixels(&pixels, &starting_centroids);
+    loop {
+        let new_labelled_pixels = cluster_pixels(&pixels, &centroids);
 
-    let reconstructed_pixels = reconstruct_image(&pixels, clustered_pixels, &starting_centroids);
+        if compare_clustered_pixels(&new_labelled_pixels, &labelled_pixels) {
+            println!("Finally!");
+            break;
+        }
+        println!("Nope!");
+
+        labelled_pixels = new_labelled_pixels.clone();
+
+        centroids = update_centroids(&pixels, &new_labelled_pixels, n);
+    }
+
+    let reconstructed_pixels = reconstruct_image(&pixels, &labelled_pixels, &centroids);
 
     let img_buffer: RgbImage =
         ImageBuffer::from_raw(image.width(), image.height(), reconstructed_pixels)
@@ -130,7 +145,7 @@ fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<
 
 fn reconstruct_image(
     pixels: &Vec<u8>,
-    clustered_pixels: Vec<u8>,
+    clustered_pixels: &Vec<u8>,
     centroids: &Vec<[u8; 3]>,
 ) -> Vec<u8> {
     let mut reconstructed_pixels = Vec::with_capacity(pixels.len());
