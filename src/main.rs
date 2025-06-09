@@ -87,6 +87,17 @@ fn cluster_pixels(pixels: &Vec<u8>, centroids: &Vec<[u8; 3]>) -> Vec<u8> {
         .collect()
 }
 
+fn compare_clustered_pixels(clustered_pixels_1: &Vec<u8>, clustered_pixels_2: &Vec<u8>) -> bool {
+    if clustered_pixels_1.len() != clustered_pixels_2.len() {
+        return false;
+    }
+
+    clustered_pixels_1
+        .iter()
+        .zip(clustered_pixels_2.iter())
+        .all(|(a, b)| a == b)
+}
+
 fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<[u8; 3]> {
     let mut centroid_sums = vec![[0; 3]; n as usize];
 
