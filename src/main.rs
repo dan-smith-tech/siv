@@ -12,7 +12,7 @@ struct Args {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let Args { file, debug } = Args::parse();
+    let Args { file, debug: _ } = Args::parse();
 
     let image = ImageReader::open(file)?.decode()?;
     // note this is a 1D array (so there are pixels.len() / 3 actual RGB pixels)
@@ -21,25 +21,29 @@ fn main() -> Result<(), Box<dyn Error>> {
     // TODO: get cluster n from input but as a u8 and ensure it is below u8::MAX
     let n = 3;
 
-    let mut centroids = get_random_centroids(&pixels, 3)?;
+    let mut centroids = get_random_centroids(&pixels, n)?;
     let mut labelled_pixels = cluster_pixels(&pixels, &centroids);
     centroids = update_centroids(&pixels, &labelled_pixels, n);
-    if debug {
-        println!("Starting centroids: {:?}", centroids);
-    }
 
     loop {
         let new_labelled_pixels = cluster_pixels(&pixels, &centroids);
 
         if compare_clustered_pixels(&new_labelled_pixels, &labelled_pixels) {
-            println!("Finally!");
+            println!(
+                "Random pixel in new labelled pixels: {}",
+                new_labelled_pixels[10000]
+            );
+            println!(
+                "Same random pixel in old labelled pixels: {}",
+                labelled_pixels[10000]
+            );
             break;
         }
-        println!("Nope!");
 
         labelled_pixels = new_labelled_pixels.clone();
 
         centroids = update_centroids(&pixels, &new_labelled_pixels, n);
+        println!("Updated centroids: {:?}", centroids);
     }
 
     let reconstructed_pixels = reconstruct_image(&pixels, &labelled_pixels, &centroids);
@@ -119,9 +123,10 @@ fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<
     (0..clustered_pixels.len())
         .map(|clustered_pixel| {
             let pixel_start = clustered_pixel * 3;
-            centroid_sums[clustered_pixel][0] += pixels[pixel_start] as usize;
-            centroid_sums[clustered_pixel][1] += pixels[pixel_start + 1] as usize;
-            centroid_sums[clustered_pixel][2] += pixels[pixel_start + 2] as usize;
+            let label = clustered_pixels[clustered_pixel] as usize;
+            centroid_sums[label][0] += pixels[pixel_start] as usize;
+            centroid_sums[label][1] += pixels[pixel_start + 1] as usize;
+            centroid_sums[label][2] += pixels[pixel_start + 2] as usize;
         })
         .for_each(drop);
 
@@ -131,9 +136,11 @@ fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<
 
     (0..centroid_sums.len())
         .map(|i| {
-            centroid_sums[i][0] /= counts[i];
-            centroid_sums[i][1] /= counts[i];
-            centroid_sums[i][2] /= counts[i];
+            if counts[i] > 0 {
+                centroid_sums[i][0] /= counts[i];
+                centroid_sums[i][1] /= counts[i];
+                centroid_sums[i][2] /= counts[i];
+            }
             [
                 centroid_sums[i][0] as u8,
                 centroid_sums[i][1] as u8,
