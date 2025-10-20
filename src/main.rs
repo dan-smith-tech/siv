@@ -73,11 +73,11 @@ fn get_random_centroids(pixels: &Vec<u8>, n: u8) -> Result<Vec<[u8; 3]>, Box<dyn
 fn cluster_pixels(pixels: &Vec<u8>, centroids: &Vec<[u8; 3]>) -> Vec<u8> {
     let pixel_count = pixels.len() / 3;
 
-    let mut closest_centroid_index: u8 = 0;
-    let mut closest_distance = u32::MAX;
-
     (0..pixel_count)
         .map(|i| {
+            let mut closest_centroid_index: u8 = 0;
+            let mut closest_distance = u32::MAX;
+
             (0..centroids.len())
                 .map(|j| {
                     let r_pixel = pixels[i * 3];
