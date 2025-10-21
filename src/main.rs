@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn get_random_centroids(pixels: &Vec<u8>, n: u8) -> Result<Vec<[u8; 3]>, Box<dyn Error>> {
+fn get_random_centroids(pixels: &[u8], n: u8) -> Result<Vec<[u8; 3]>, Box<dyn Error>> {
     let pixel_count = pixels.len() / 3;
     let mut rng = rand::rng();
     match Uniform::try_from(0..pixel_count) {
@@ -57,7 +57,7 @@ fn get_random_centroids(pixels: &Vec<u8>, n: u8) -> Result<Vec<[u8; 3]>, Box<dyn
     }
 }
 
-fn cluster_pixels(pixels: &Vec<u8>, centroids: &Vec<[u8; 3]>) -> Vec<u8> {
+fn cluster_pixels(pixels: &[u8], centroids: &[[u8; 3]]) -> Vec<u8> {
     let pixel_count = pixels.len() / 3;
 
     (0..pixel_count)
@@ -93,7 +93,7 @@ fn cluster_pixels(pixels: &Vec<u8>, centroids: &Vec<[u8; 3]>) -> Vec<u8> {
         .collect()
 }
 
-fn compare_clustered_pixels(clustered_pixels_1: &Vec<u8>, clustered_pixels_2: &Vec<u8>) -> bool {
+fn compare_clustered_pixels(clustered_pixels_1: &[u8], clustered_pixels_2: &[u8]) -> bool {
     if clustered_pixels_1.len() != clustered_pixels_2.len() {
         return false;
     }
@@ -104,7 +104,7 @@ fn compare_clustered_pixels(clustered_pixels_1: &Vec<u8>, clustered_pixels_2: &V
         .all(|(a, b)| a == b)
 }
 
-fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<[u8; 3]> {
+fn update_centroids(pixels: &[u8], clustered_pixels: &[u8], n: u8) -> Vec<[u8; 3]> {
     let mut centroid_sums = vec![[0; 3]; n as usize];
 
     (0..clustered_pixels.len())
@@ -137,11 +137,7 @@ fn update_centroids(pixels: &Vec<u8>, clustered_pixels: &Vec<u8>, n: u8) -> Vec<
         .collect()
 }
 
-fn reconstruct_image(
-    pixels: &Vec<u8>,
-    clustered_pixels: &Vec<u8>,
-    centroids: &Vec<[u8; 3]>,
-) -> Vec<u8> {
+fn reconstruct_image(pixels: &[u8], clustered_pixels: &[u8], centroids: &[[u8; 3]]) -> Vec<u8> {
     let mut reconstructed_pixels = Vec::with_capacity(pixels.len());
 
     clustered_pixels
