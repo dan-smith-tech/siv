@@ -6,24 +6,20 @@ use std::error::Error;
 #[derive(Parser, Debug)]
 struct Args {
     file: String,
-
-    #[arg(long, short)]
-    debug: bool,
+    k: u8,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let Args { file, debug: _ } = Args::parse();
+    let Args { file, k } = Args::parse();
 
     let image = ImageReader::open(file)?.decode()?;
     let pixels = image.to_rgb8().to_vec();
 
-    let n = 3; // TODO: get cluster n from input as u8 with bounds check
-
-    let mut centroids = get_random_centroids(&pixels, n)?;
+    let mut centroids = get_random_centroids(&pixels, k)?;
     let mut labelled_pixels = cluster_pixels(&pixels, &centroids);
 
     loop {
-        centroids = update_centroids(&pixels, &labelled_pixels, n);
+        centroids = update_centroids(&pixels, &labelled_pixels, k);
         let new_labelled_pixels = cluster_pixels(&pixels, &centroids);
 
         if compare_clustered_pixels(&new_labelled_pixels, &labelled_pixels) {
