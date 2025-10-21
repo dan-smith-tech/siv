@@ -15,35 +15,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     let Args { file, debug: _ } = Args::parse();
 
     let image = ImageReader::open(file)?.decode()?;
-    // note this is a 1D array (so there are pixels.len() / 3 actual RGB pixels)
     let pixels = image.to_rgb8().to_vec();
 
-    // TODO: get cluster n from input but as a u8 and ensure it is below u8::MAX
-    let n = 3;
+    let n = 3; // TODO: get cluster n from input as u8 with bounds check
 
     let mut centroids = get_random_centroids(&pixels, n)?;
     let mut labelled_pixels = cluster_pixels(&pixels, &centroids);
-    centroids = update_centroids(&pixels, &labelled_pixels, n);
 
     loop {
+        centroids = update_centroids(&pixels, &labelled_pixels, n);
         let new_labelled_pixels = cluster_pixels(&pixels, &centroids);
 
         if compare_clustered_pixels(&new_labelled_pixels, &labelled_pixels) {
-            println!(
-                "Random pixel in new labelled pixels: {}",
-                new_labelled_pixels[10000]
-            );
-            println!(
-                "Same random pixel in old labelled pixels: {}",
-                labelled_pixels[10000]
-            );
             break;
         }
 
-        labelled_pixels = new_labelled_pixels.clone();
-
-        centroids = update_centroids(&pixels, &new_labelled_pixels, n);
-        println!("Updated centroids: {:?}", centroids);
+        labelled_pixels = new_labelled_pixels;
     }
 
     let reconstructed_pixels = reconstruct_image(&pixels, &labelled_pixels, &centroids);
