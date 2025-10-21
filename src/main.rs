@@ -5,14 +5,14 @@ use std::error::Error;
 
 #[derive(Parser, Debug)]
 struct Args {
-    file: String,
+    file_path: String,
     k: u8,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let Args { file, k } = Args::parse();
+    let Args { file_path, k } = Args::parse();
 
-    let image = ImageReader::open(file)?.decode()?;
+    let image = ImageReader::open(file_path)?.decode()?;
     let pixels = image.to_rgb8().to_vec();
 
     let mut centroids = get_random_centroids(&pixels, k)?;
